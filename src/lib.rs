@@ -21,6 +21,7 @@ pub mod retinaface {
 
     #[allow(unused_imports)]
     use crate::{bench, mal_Detection, mal_RetinaFace};
+    use std::path::Path;
 
     const INPUT_SIZE: Size = Size { width: 512, height: 512 };
     const SCORE_THRE: f32 = 0.5;
@@ -32,6 +33,9 @@ pub mod retinaface {
 
     impl RetinaFace {
         pub fn new(model_path: &str) -> Self {
+            if !Path::new(&model_path).exists() {
+               panic!("{} is not found.", model_path)
+            }
             let model_path = CString::new(model_path).unwrap();
             let ptr = model_path.as_ptr();
             let retinaface = unsafe { mal_RetinaFace::new(ptr) };
