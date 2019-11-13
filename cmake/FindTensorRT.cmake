@@ -1,0 +1,27 @@
+include(FindPackageHandleStandardArgs)
+
+find_path(TENSORRT_INCLUDE_DIR NvInfer.h
+        HINTS ${TENSORRT_ROOT} ${CUDA_TOOLKIT_ROOT_DIR}
+        PATH_SUFFIXES include)
+MESSAGE(STATUS "Found TensorRT headers at ${TENSORRT_INCLUDE_DIR}")
+
+find_library(TENSORRT_LIBRARY_INFER nvinfer
+        HINTS ${TENSORRT_ROOT} ${TENSORRT_BUILD} ${CUDA_TOOLKIT_ROOT_DIR}
+        PATH_SUFFIXES lib lib64 lib/x64)
+find_library(TENSORRT_LIBRARY_PARSERS nvparsers
+        HINTS ${TENSORRT_ROOT} ${TENSORRT_BUILD} ${CUDA_TOOLKIT_ROOT_DIR}
+        PATH_SUFFIXES lib lib64 lib/x64)
+find_library(TENSORRT_LIBRARY_ONNX_PARSER nvonnxparser
+        HINTS ${TENSORRT_ROOT} ${TENSORRT_BUILD} ${CUDA_TOOLKIT_ROOT_DIR}
+        PATH_SUFFIXES lib lib64 lib/x64)
+set(TENSORRT_LIBRARY
+        ${TENSORRT_LIBRARY_INFER}
+        ${TENSORRT_LIBRARY_PARSERS}
+        ${TENSORRT_LIBRARY_ONNX_PARSER})
+MESSAGE(STATUS "Find TensorRT libs at ${TENSORRT_LIBRARY}")
+
+find_package_handle_standard_args(
+        TENSORRT DEFAULT_MSG TENSORRT_INCLUDE_DIR TENSORRT_LIBRARY)
+if (NOT TENSORRT_FOUND)
+    message(ERROR "Cannot find TensorRT library.")
+endif ()

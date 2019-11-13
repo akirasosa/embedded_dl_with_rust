@@ -1,0 +1,17 @@
+[package]
+name = "embedded_dl_with_rust"
+version = "0.1.0"
+authors = ["Akira Sosa <akirasosa@gmail.com>"]
+edition = "2018"
+build = "build.rs"
+
+[dependencies]
+opencv = {version = "0.24.5", default-features = false, features = ["opencv-41"]}
+cpp = "0.5.4"
+log = "0.4"
+env_logger = "0.7.1"
+
+[build-dependencies]
+cmake = "0.1.42"
+cpp_build = "0.5.4"
+bindgen = "0.51.1"
