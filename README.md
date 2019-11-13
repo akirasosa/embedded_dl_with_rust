@@ -13,7 +13,7 @@ This repository uses C++ only for minimal usage which interacts with GPU using T
 ## Requirements
 
 * Rust
-  * [rust-cpp](https://github.com/mystor/rust-cpp)
+  * [bindgen](https://github.com/rust-lang/rust-bindgen)
   * [cmake-rs](https://github.com/alexcrichton/cmake-rs)
 * [TensorRT 6](https://developer.nvidia.com/tensorrt)
 * OpenCV4
