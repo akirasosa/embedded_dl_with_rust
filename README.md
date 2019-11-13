@@ -8,7 +8,7 @@ Though cloud usage is common in most situations, it sometimes necessary to run d
 
 C++ is the most widely used for embedded system, but its productivity is low and it sometimes ships unsafe code. Rust can give developers both of performance and safety.
 
-This repository uses C++ only for minimal usage which interacts with GPU using TensorRT. The rest of codes are all written by Rust. It's useful to make some apps which use GPU in embedded system.
+This repository uses C++ only for minimal usage which interacts with GPU using TensorRT. The rest of codes are all written by Rust. It's useful to make an app which uses GPU in embedded system.
 
 ## Requirements
 
