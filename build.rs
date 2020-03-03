@@ -26,16 +26,16 @@ fn main()
     println!("cargo:rerun-if-changed=libretinaface/**/*");
     println!("cargo:rerun-if-changed=wrapper.hpp");
 
-    let target = env::var("TARGET").unwrap();
-    if target.contains("apple")
-    {
-        println!("cargo:rustc-link-lib=dylib=c++");
-    } else if target.contains("linux")
-    {
-        println!("cargo:rustc-link-lib=dylib=stdc++");
-    } else {
-        unimplemented!();
-    }
+//    let target = env::var("TARGET").unwrap();
+//    if target.contains("apple")
+//    {
+//        println!("cargo:rustc-link-lib=dylib=c++");
+//    } else if target.contains("linux")
+//    {
+////        println!("cargo:rustc-link-lib=dylib=stdc++");
+//    } else {
+//        unimplemented!();
+//    }
 
     let bindings = bindgen::Builder::default()
         .header("wrapper.hpp")

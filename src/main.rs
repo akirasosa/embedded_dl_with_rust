@@ -1,16 +1,40 @@
-use opencv::core::{Point, Scalar, ToInputOutputArray, Rect, Mat};
+extern crate itertools;
+extern crate itertools_num;
+
+use std::fs::File;
+use std::io::{self, BufRead};
+use std::path::Path;
+
+use itertools_num::linspace;
+use opencv::core::{Mat, Point, Rect, Scalar, ToInputOutputArray};
 use opencv::imgcodecs::{imread, IMREAD_COLOR, imwrite};
 use opencv::imgproc::LINE_8;
 use opencv::prelude::Vector;
 use opencv::Result;
 use opencv::types::VectorOfint;
+use opencv::videoio::{CAP_ANY, CAP_PROP_FPS, CAP_PROP_FRAME_COUNT, VideoCapture, VideoWriter};
 
-use opencv::videoio::{VideoCapture, CAP_ANY, VideoWriter, CAP_PROP_FPS};
-use embedded_dl_with_rust::retinaface::{RetinaFace, DetectionResult, Detection};
+use embedded_dl_with_rust::retinaface::{Detection, DetectionResult, RetinaFace};
+
 
 const MODEL_PATH: &str = "tmp/retinaface_resnet50_trained_opt.trt";
 
+fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+    where P: AsRef<Path>, {
+    let file = File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
+}
+
 fn main() {
+//    if let Ok(lines) = read_lines("./tmp/list.txt") {
+//        for line in lines {
+//            if let Ok(ip) = line {
+//                println!("{}", ip);
+//            }
+//        }
+//    }
+//    test_video().unwrap();
+
     env_logger::init();
     run().unwrap();
 //    run_video().unwrap();
@@ -25,6 +49,25 @@ fn run() -> Result<()> {
 
     render(&mut img, detections);
     imwrite("tmp/out.jpg", &img, &VectorOfint::new())?;
+
+    Ok(())
+}
+
+#[allow(unused)]
+fn test_video() -> Result<()> {
+    let video_in_path = "/mnt/lvstuff/akirasosa/data/deepfake-detection-challenge/test_videos/scbdenmaed.mp4";
+    let mut cap = VideoCapture::new_from_file_with_backend(video_in_path, CAP_ANY)?;
+
+    let codec = VideoWriter::fourcc('M' as i8, 'J' as i8, 'P' as i8, 'G' as i8)?;
+    let fps = cap.get(CAP_PROP_FPS)?;
+    let frame_count = cap.get(CAP_PROP_FRAME_COUNT)?;
+//    let frames_to_use = linspace::<i32>(0, frame_count as i32, 4 + 2);
+    println!("{}", frame_count);
+
+//    let mut retinaface = RetinaFace::new(MODEL_PATH);
+
+
+    cap.release()?;
 
     Ok(())
 }

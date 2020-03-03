@@ -54,7 +54,7 @@ pub mod retinaface {
 //            });
             let (img, inv_mat) = wrap_in_blank(img, INPUT_SIZE).unwrap();
             let data = img_to_vec(&img).unwrap();
-            let raw_detection = self.retinaface.detect(data.as_ptr(), data.len());
+            let raw_detection = self.retinaface.detect(data.as_ptr(), data.len() as u64);
 
             DetectionResult::from(&raw_detection)
                 .apply(nms)
