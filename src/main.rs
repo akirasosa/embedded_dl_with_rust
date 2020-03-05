@@ -8,6 +8,7 @@ use std::path::Path;
 use std::time::SystemTime;
 
 use clap::{App, Arg};
+use failure::Error;
 use itertools_num::linspace;
 use opencv::core::{Mat, Point, Rect, Scalar, ToInputOutputArray};
 use opencv::imgcodecs::{imread, IMREAD_COLOR, imwrite};
@@ -62,7 +63,7 @@ fn main() {
     let mut retinaface = RetinaFace::new(MODEL_PATH);
     let video_path = Path::new("/mnt/lvstuff/akirasosa/data/deepfake-detection-challenge/test_videos/scbdenmaed.mp4");
 
-    test_video(&mut retinaface, video_path, t, mul)
+    test_video(&mut retinaface, video_path, t, mul).unwrap();
 
 //    env_logger::init();
 //    run().unwrap();
@@ -83,12 +84,12 @@ fn main() {
 //}
 
 #[allow(unused)]
-fn test_video(retinaface: &mut RetinaFace, video_path: &Path, t: usize, mul: usize) {
-    let mut cap = VideoCapture::new_from_file_with_backend(video_path.to_str().unwrap(), CAP_ANY).unwrap();
+fn test_video(retinaface: &mut RetinaFace, video_path: &Path, t: usize, mul: usize) -> Result<(), Error> {
+    let mut cap = VideoCapture::new_from_file_with_backend(video_path.to_str().unwrap(), CAP_ANY)?;
 
-    let codec = VideoWriter::fourcc('M' as i8, 'J' as i8, 'P' as i8, 'G' as i8).unwrap();
-    let fps = cap.get(CAP_PROP_FPS).unwrap();
-    let frame_count = cap.get(CAP_PROP_FRAME_COUNT).unwrap();
+    let codec = VideoWriter::fourcc('M' as i8, 'J' as i8, 'P' as i8, 'G' as i8)?;
+    let fps = cap.get(CAP_PROP_FPS)?;
+    let frame_count = cap.get(CAP_PROP_FRAME_COUNT)?;
     let frames_to_use = {
         let double = linspace::<f64>(0., frame_count, t * mul + 2)
             .map(|n| n as i64)
@@ -114,22 +115,24 @@ fn test_video(retinaface: &mut RetinaFace, video_path: &Path, t: usize, mul: usi
             }
         }
 
-        let mut frame = Mat::default().unwrap();
+        let mut frame = Mat::default()?;
         if let Err(result) = cap.read(&mut frame) {
             break;
         }
 
         let detections = unsafe { retinaface.detect(&frame) };
         render(&mut frame, detections);
-        imwrite(&format!("out/{}-{:03}.jpg", video_path.file_stem().unwrap().to_str().unwrap(), n), &frame, &VectorOfint::new()).unwrap();
+        let stem = video_path.file_stem().unwrap().to_str().unwrap();
+        imwrite(&format!("out/{}-{:03}.jpg", stem, n), &frame, &VectorOfint::new())?;
 
         println!("{}", n);
     }
     let end = SystemTime::now();
-    let elapsed = end.duration_since(start).unwrap();
+    let elapsed = end.duration_since(start)?;
     println!("elapsed {:?}", elapsed);
 
-    cap.release().unwrap();
+    cap.release()?;
+    Ok(())
 }
 
 //#[allow(unused)]
