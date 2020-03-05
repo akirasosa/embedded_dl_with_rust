@@ -16,6 +16,7 @@ use opencv::types::VectorOfint;
 use opencv::videoio::{CAP_ANY, CAP_PROP_FPS, CAP_PROP_FRAME_COUNT, VideoCapture, VideoWriter};
 
 use embedded_dl_with_rust::retinaface::{Detection, DetectionResult, RetinaFace};
+use clap::{App, Arg};
 
 const MODEL_PATH: &str = "tmp/retinaface_resnet50_trained_opt.trt";
 
@@ -33,7 +34,22 @@ fn main() {
 //            }
 //        }
 //    }
-    test_video().unwrap();
+    let matches = App::new("My Super Program")
+        .version("1.0")
+        .author("Kevin K. <kbknapp@gmail.com>")
+        .about("Does awesome things")
+        .arg(Arg::with_name("list_file")
+            .long("list_file")
+            .required(true)
+            .takes_value(true))
+        .arg(Arg::with_name("T")
+            .long("T")
+            .default_value("4")
+            .takes_value(true))
+        .get_matches();
+    println!("{:?}", matches.value_of("list_file"));
+    println!("{:?}", matches.value_of("T"));
+//    test_video().unwrap();
 
 //    env_logger::init();
 //    run().unwrap();
@@ -94,6 +110,8 @@ fn test_video() -> Result<()> {
         }
 
         let detections = unsafe { retinaface.detect(&frame) };
+        render(&mut frame, detections);
+        imwrite(&format!("out/{:03}.jpg", n), &frame, &VectorOfint::new())?;
 
         println!("{}", n);
     }
