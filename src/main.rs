@@ -4,6 +4,7 @@ extern crate itertools_num;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::time::SystemTime;
 
 use itertools_num::linspace;
 use opencv::core::{Mat, Point, Rect, Scalar, ToInputOutputArray};
@@ -15,7 +16,6 @@ use opencv::types::VectorOfint;
 use opencv::videoio::{CAP_ANY, CAP_PROP_FPS, CAP_PROP_FRAME_COUNT, VideoCapture, VideoWriter};
 
 use embedded_dl_with_rust::retinaface::{Detection, DetectionResult, RetinaFace};
-
 
 const MODEL_PATH: &str = "tmp/retinaface_resnet50_trained_opt.trt";
 
@@ -33,10 +33,10 @@ fn main() {
 //            }
 //        }
 //    }
-//    test_video().unwrap();
+    test_video().unwrap();
 
-    env_logger::init();
-    run().unwrap();
+//    env_logger::init();
+//    run().unwrap();
 //    run_video().unwrap();
 }
 
@@ -61,11 +61,45 @@ fn test_video() -> Result<()> {
     let codec = VideoWriter::fourcc('M' as i8, 'J' as i8, 'P' as i8, 'G' as i8)?;
     let fps = cap.get(CAP_PROP_FPS)?;
     let frame_count = cap.get(CAP_PROP_FRAME_COUNT)?;
-//    let frames_to_use = linspace::<i32>(0, frame_count as i32, 4 + 2);
-    println!("{}", frame_count);
+    let frames_to_use = {
+        let double = linspace::<f64>(0., frame_count, 4 + 2)
+            .map(|n| n as i64)
+            .map(|n| [n, n + 1])
+            .collect::<Vec<_>>();
+        double[1..double.len() - 1].iter()
+            .flatten()
+            .cloned()
+            .collect::<Vec<_>>()
+    };
 
-//    let mut retinaface = RetinaFace::new(MODEL_PATH);
+    let mut retinaface = RetinaFace::new(MODEL_PATH);
 
+    let start = SystemTime::now();
+    for n in 0..frame_count as i64 {
+        if &n > frames_to_use.last().unwrap() {
+            break;
+        }
+
+        if !frames_to_use.contains(&n) {
+            if let Ok(result) = cap.grab() {
+                continue;
+            } else {
+                break;
+            }
+        }
+
+        let mut frame = Mat::default().unwrap();
+        if let Err(result) = cap.read(&mut frame) {
+            break;
+        }
+
+        let detections = unsafe { retinaface.detect(&frame) };
+
+        println!("{}", n);
+    }
+    let end = SystemTime::now();
+    let elapsed = end.duration_since(start).unwrap();
+    println!("elapsed {:?}", elapsed);
 
     cap.release()?;
 
