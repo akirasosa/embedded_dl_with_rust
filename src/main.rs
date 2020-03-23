@@ -28,17 +28,9 @@ fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 }
 
 fn main() {
-//    if let Ok(lines) = read_lines("./tmp/list.txt") {
-//        for line in lines {
-//            if let Ok(ip) = line {
-//                println!("{}", ip);
-//            }
-//        }
-//    }
-    let matches = App::new("My Super Program")
-        .version("1.0")
-        .author("Kevin K. <kbknapp@gmail.com>")
-        .about("Does awesome things")
+    env_logger::init();
+
+    let matches = App::new("")
         .arg(Arg::with_name("list_file")
             .long("list_file")
             .required(true)
@@ -52,8 +44,6 @@ fn main() {
             .default_value("1")
             .takes_value(true))
         .get_matches();
-    println!("{:?}", matches.value_of("list_file"));
-    println!("{:?}", matches.value_of("T").unwrap().parse::<usize>());
 
     fs::remove_dir_all("./out").ok();
     fs::create_dir("./out").unwrap();
@@ -61,30 +51,17 @@ fn main() {
     let t = matches.value_of("T").unwrap().parse::<usize>().unwrap();
     let mul = matches.value_of("mul").unwrap().parse::<usize>().unwrap();
     let mut retinaface = RetinaFace::new(MODEL_PATH);
-    let video_path = Path::new("/mnt/lvstuff/akirasosa/data/deepfake-detection-challenge/test_videos/scbdenmaed.mp4");
 
-    test_video(&mut retinaface, video_path, t, mul).unwrap();
-
-//    env_logger::init();
-//    run().unwrap();
-//    run_video().unwrap();
+    let list_file = matches.value_of("list_file").unwrap();
+    for line in read_lines(list_file).unwrap() {
+        let fname = line.unwrap();
+        let video_path = Path::new(&fname);
+        detect(&mut retinaface, video_path, t, mul).unwrap();
+    }
 }
 
-//#[allow(unused)]
-//fn run() -> Result<()> {
-//    let mut img = imread("images/faces.jpg", IMREAD_COLOR)?;
-//
-//    let mut retinaface = RetinaFace::new(MODEL_PATH);
-//    let detections = unsafe { retinaface.detect(&img) };
-//
-//    render(&mut img, detections);
-//    imwrite("tmp/out.jpg", &img, &VectorOfint::new())?;
-//
-//    Ok(())
-//}
-
 #[allow(unused)]
-fn test_video(retinaface: &mut RetinaFace, video_path: &Path, t: usize, mul: usize) -> Result<(), Error> {
+fn detect(retinaface: &mut RetinaFace, video_path: &Path, t: usize, mul: usize) -> Result<(), Error> {
     let mut cap = VideoCapture::new_from_file_with_backend(video_path.to_str().unwrap(), CAP_ANY)?;
 
     let codec = VideoWriter::fourcc('M' as i8, 'J' as i8, 'P' as i8, 'G' as i8)?;
@@ -134,42 +111,6 @@ fn test_video(retinaface: &mut RetinaFace, video_path: &Path, t: usize, mul: usi
     cap.release()?;
     Ok(())
 }
-
-//#[allow(unused)]
-//fn run_video() -> Result<()> {
-//    let video_in_path = "/home/akirasosa/tmp/face-demographics-walking.mp4";
-//    let mut cap = VideoCapture::new_from_file_with_backend(video_in_path, CAP_ANY)?;
-//
-//    let video_out_path = "tmp/out.avi";
-//    let codec = VideoWriter::fourcc('M' as i8, 'J' as i8, 'P' as i8, 'G' as i8)?;
-//    let fps = cap.get(CAP_PROP_FPS)?;
-//    let size = Mat::default().and_then(|mut mat| {
-//        cap.read(&mut mat);
-//        mat.size()
-//    })?;
-//    let mut writer = VideoWriter::new(video_out_path, codec, fps, size, true)?;
-//
-//    let mut retinaface = RetinaFace::new(MODEL_PATH);
-//
-//    loop {
-//        let mut frame = Mat::default().and_then(|mut mat| {
-//            cap.read(&mut mat);
-//            Ok(mat)
-//        })?;
-//
-//        if frame.empty()? { break; }
-//
-//        let detections = unsafe { retinaface.detect(&frame) };
-//        render(&mut frame, detections);
-//
-//        writer.write(&frame).unwrap();
-//    }
-//
-//    cap.release()?;
-//    writer.release()?;
-//
-//    Ok(())
-//}
 
 fn color(b: u8, g: u8, r: u8) -> Scalar {
     Scalar::new(b as f64, g as f64, r as f64, 0.)
