@@ -67,16 +67,9 @@ fn detect(retinaface: &mut RetinaFace, video_path: &Path, t: usize, mul: usize) 
     let codec = VideoWriter::fourcc('M' as i8, 'J' as i8, 'P' as i8, 'G' as i8)?;
     let fps = cap.get(CAP_PROP_FPS)?;
     let frame_count = cap.get(CAP_PROP_FRAME_COUNT)?;
-    let frames_to_use = {
-        let double = linspace::<f64>(0., frame_count, t * mul + 2)
-            .map(|n| n as i64)
-            .map(|n| [n, n + 1])
-            .collect::<Vec<_>>();
-        double[1..double.len() - 1].iter()
-            .flatten()
-            .cloned()
-            .collect::<Vec<_>>()
-    };
+    let frames_to_use = linspace::<f64>(0., frame_count, t * mul + 2)
+        .map(|n| n as i64)
+        .collect::<Vec<_>>();
 
     let start = SystemTime::now();
     for n in 0..frame_count as i64 {
